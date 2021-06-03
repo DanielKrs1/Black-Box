@@ -29,15 +29,12 @@ class Grid
 {
     constructor(width, height, cellSize, atomCount)
     {
-        var x = random(6, 10);
-        console.log(x);
-
         this.width = width;
         this.height = height;
         this.cellSize = cellSize;
         this.grid = [];
 
-        var cells = [];
+        var cellsWithoutAtoms = [];
 
         //initialize grid
         for (var x = 0; x < width; x++)
@@ -47,7 +44,7 @@ class Grid
             for (var y = 0; y < height; y++)
             {
                 var cell = new Cell(x, y, this);
-                cells.push(cell);
+                cellsWithoutAtoms.push(cell);
                 temp.push(cell);
             }
 
@@ -55,8 +52,13 @@ class Grid
         }
 
         //place random atoms
-
-        TOTOJORFD
+        for (var i = 0; i < atomCount; i++)
+        {
+            var cellIndex = Random(0, cellsWithoutAtoms.length);
+            var cell = cellsWithoutAtoms[cellIndex];
+            cellsWithoutAtoms.splice(cellIndex, 1);
+            cell.isAtom = true;
+        }        
     }
 
     Draw()
@@ -72,7 +74,6 @@ var grid = new Grid(17, 8, 50, 5);
 function setup()
 {
     createCanvas(grid.width * grid.cellSize, grid.height * grid.cellSize);
-    console.log(grid.grid);
 }
 
 function draw()
@@ -80,3 +81,28 @@ function draw()
     background(220);
     grid.Draw();
 }
+
+//tyler fix this rn if you dont im gonna be pissed
+function mousePressed()
+{
+    if (mouseX < 0 || mouseX >= width || mouseY < 0 || mouseY >= height)
+        return;
+
+    var x = round(mouseX / grid.cellSize - 0.5);
+    var y = round(mouseY / grid.cellSize - 0.5);
+    //grid[round(mouseX / cellSize - 0.5)][round(mouseY / cellSize - 0.5)].state = selectedCellType;
+
+    //make x and y vars with mouse grid position ok poopyhead
+    console.log(x);
+    console.log(y);
+    
+}
+
+//returns random number from min to max, exclusive to max ok bitch
+//Math.random() returns 0 to 1 exclusive to 1 so isn't this right then? NO WHY IS IT WRONG THEN OH WAIT I SEE
+function Random(min, max)
+{
+    return min + (max - min) * Math.random();
+}
+fnodffindf
+//TODO: TEST RANDOM FUNCTION
