@@ -1,27 +1,38 @@
 class Cell
 {
-    constructor(x, y, grid)
+    constructor(x, y, masterGrid)
     {
-        this.grid = grid;
-        this.isEdge = x == 0 || y == 0 || x == grid.width - 1 || y == grid.height - 1;
+        this.masterGrid = masterGrid;
+        this.isOnEdge = masterGrid.IsOnEdge(x, y);
         this.isAtom = false;
+        this.isMarked = false;
         this.x = x;
         this.y = y;
-        this.worldX = x * grid.cellSize;
-        this.worldY = y * grid.cellSize;
+        this.worldX = x * masterGrid.cellSize;
+        this.worldY = y * masterGrid.cellSize;
     }
 
     Draw()
     {
         fill(225);
-        rect(this.worldX, this.worldY,   this.grid.cellSize, this.grid.cellSize);
-        fill(225);
+        rect(this.worldX, this.worldY,   this.masterGrid.cellSize, this.masterGrid.cellSize);
 
+        if (this.isMarked)
+        {
+            fill(255, 0, 0);
+            var halfCellSize = this.masterGrid.cellSize / 2;
+            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, halfCellSize, halfCellSize);
+        }
+        
+        /*
         if (this.isAtom)
         {
-            var halfCellSize = this.grid.cellsize / 2;
-            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, this.grid.cellSize, this.grid.cellSize);
+            fill(0);
+            
+            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, this.masterGrid.cellSize, this.masterGrid.cellSize);   
+
         }
+        */
     }
 }
 
@@ -44,7 +55,10 @@ class Grid
             for (var y = 0; y < height; y++)
             {
                 var cell = new Cell(x, y, this);
-                cellsWithoutAtoms.push(cell);
+
+                if (!cell.isOnEdge)
+                    cellsWithoutAtoms.push(cell);
+
                 temp.push(cell);
             }
 
@@ -67,9 +81,19 @@ class Grid
             for (var y = 0; y < this.height; y++)
                 this.grid[x][y].Draw();
     }
+
+    IsOnEdge(x, y)
+    {
+        return x == 0 || y == 0 || x == this.width - 1 || y == this.height - 1;
+    }
+
+    GetCell(x, y)
+    {
+        return this.grid[x][y];
+    }
 }
 
-var grid = new Grid(17, 8, 50, 5);
+var grid = new Grid(8, 8, 30, 6);
 
 function setup()
 {
@@ -78,11 +102,9 @@ function setup()
 
 function draw()
 {
-    background(220);
     grid.Draw();
 }
 
-//tyler fix this rn if you dont im gonna be pissed
 function mousePressed()
 {
     if (mouseX < 0 || mouseX >= width || mouseY < 0 || mouseY >= height)
@@ -90,19 +112,18 @@ function mousePressed()
 
     var x = round(mouseX / grid.cellSize - 0.5);
     var y = round(mouseY / grid.cellSize - 0.5);
-    //grid[round(mouseX / cellSize - 0.5)][round(mouseY / cellSize - 0.5)].state = selectedCellType;
 
-    //make x and y vars with mouse grid position ok poopyhead
-    console.log(x);
-    console.log(y);
-    
+    if (grid.IsOnEdge(x, y))
+    {
+        //TOFUCKINGDO
+    } else
+    {
+        var cell = grid.GetCell(x, y);
+        cell.isMarked = !cell.isMarked;
+    }
 }
 
-//returns random number from min to max, exclusive to max ok bitch
-//Math.random() returns 0 to 1 exclusive to 1 so isn't this right then? NO WHY IS IT WRONG THEN OH WAIT I SEE
 function Random(min, max)
 {
-    return min + (max - min) * Math.random();
+    return Math.floor(min + (max - min) * Math.random());
 }
-fnodffindf
-//TODO: TEST RANDOM FUNCTION
