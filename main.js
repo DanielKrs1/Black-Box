@@ -1,15 +1,28 @@
+var shotType = {
+    none : -1,
+    hit : 0,
+    deflection : 1,
+    reflection : 2,
+    miss : 3
+}
+
 class Cell
 {
     constructor(x, y, masterGrid)
     {
         this.masterGrid = masterGrid;
-        this.isOnEdge = masterGrid.IsOnEdge(x, y);
-        this.isAtom = false;
-        this.isMarked = false;
         this.x = x;
         this.y = y;
         this.worldX = x * masterGrid.cellSize;
         this.worldY = y * masterGrid.cellSize;
+
+        //for center cells
+        this.isMarked = false;
+        this.isAtom = false;
+
+        //for edge cells
+        this.isOnEdge = masterGrid.IsOnEdge(x, y);
+        this.shotType = shotType.NONE;
     }
 
     Draw()
@@ -17,7 +30,31 @@ class Cell
         fill(225);
         rect(this.worldX, this.worldY,   this.masterGrid.cellSize, this.masterGrid.cellSize);
 
-        if (this.isMarked)
+        if (this.isOnEdge)
+        {
+            textSize(grid.cellSize * 0.75);
+            var cellSize = this.masterGrid.cellSize;
+            var drawX = this.worldX + cellSize / 3.75;
+            var drawY = this.worldY + cellSize / 1.5;
+
+            if (shotType == shotType.hit)
+            {
+                fill(255, 0, 0);
+                text("H", drawX, drawY);
+            } else if (shotType == shotType.deflection)
+            {
+                fill(0, 255, 0);
+                text("D", drawX, drawY)
+            } else if (shotType == shotType.reflection)
+            {
+                fill(255, 255, 0);
+                text("R", drawX, drawY)
+            } else if (shotType == shotType.miss)
+            {
+                fill(100, 100, 255);
+                text("M", drawX, drawY)
+            }
+        } else if (this.isMarked)
         {
             fill(255, 0, 0);
             var halfCellSize = this.masterGrid.cellSize / 2;
@@ -79,7 +116,7 @@ class Grid
     {
         for (var x = 0; x < this.width; x++)
             for (var y = 0; y < this.height; y++)
-                this.grid[x][y].Draw();
+                this.GetCell(x, y).Draw();
     }
 
     IsOnEdge(x, y)
@@ -115,7 +152,8 @@ function mousePressed()
 
     if (grid.IsOnEdge(x, y))
     {
-        //TOFUCKINGDO
+        //TODO: MAKE CELL GET TEXT WHEN CLICKED (next is actually simmulating shooting :/)
+        fdifdifd
     } else
     {
         var cell = grid.GetCell(x, y);
