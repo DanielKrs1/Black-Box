@@ -22,7 +22,10 @@ class Cell
 
         //for edge cells
         this.isOnEdge = masterGrid.IsOnEdge(x, y);
-        this.shotType = shotType.NONE;
+        this.shotType = shotType.none;
+
+        //for corners (not used)
+        this.isCorner = (x == 0 || x == masterGrid.width - 1) && (y == 0 || y == masterGrid.height - 1);
     }
 
     Draw()
@@ -37,22 +40,22 @@ class Cell
             var drawX = this.worldX + cellSize / 3.75;
             var drawY = this.worldY + cellSize / 1.5;
 
-            if (shotType == shotType.hit)
+            if (this.shotType == shotType.hit)
             {
                 fill(255, 0, 0);
                 text("H", drawX, drawY);
-            } else if (shotType == shotType.deflection)
+            } else if (this.shotType == shotType.deflection)
             {
                 fill(0, 255, 0);
-                text("D", drawX, drawY)
-            } else if (shotType == shotType.reflection)
+                text("D", drawX, drawY);
+            } else if (this.shotType == shotType.reflection)
             {
                 fill(255, 255, 0);
-                text("R", drawX, drawY)
-            } else if (shotType == shotType.miss)
+                text("R", drawX, drawY);
+            } else if (this.shotType == shotType.miss)
             {
                 fill(100, 100, 255);
-                text("M", drawX, drawY)
+                text("M", drawX, drawY);
             }
         } else if (this.isMarked)
         {
@@ -81,6 +84,7 @@ class Grid
         this.height = height;
         this.cellSize = cellSize;
         this.grid = [];
+        this.cellsWithAtoms = [];
 
         var cellsWithoutAtoms = [];
 
@@ -109,6 +113,7 @@ class Grid
             var cell = cellsWithoutAtoms[cellIndex];
             cellsWithoutAtoms.splice(cellIndex, 1);
             cell.isAtom = true;
+            this.cellsWithAtoms.push(cell);
         }        
     }
 
@@ -149,16 +154,73 @@ function mousePressed()
 
     var x = round(mouseX / grid.cellSize - 0.5);
     var y = round(mouseY / grid.cellSize - 0.5);
+    var cell = grid.GetCell(x, y);
 
     if (grid.IsOnEdge(x, y))
     {
-        //TODO: MAKE CELL GET TEXT WHEN CLICKED (next is actually simmulating shooting :/)
-        fdifdifd
+        if (cell.isCorner)
+            return;
+
+        
     } else
     {
-        var cell = grid.GetCell(x, y);
         cell.isMarked = !cell.isMarked;
     }
+}
+
+function FireLaser(startCell)
+{
+    //laser position
+    var laserX = startCell.x;
+    var laserY = startCell.y;
+
+    //laser velocity
+    var xVel = 0;
+    var yVel = 0;
+
+    //left edge
+    if (startCell.x == 0)
+        xVel = 1;
+    //right edge
+    else if (startCell.x == grid.width - 1)
+        xVel = -1;
+    //top edge
+    else if (startCell.y == 0)
+        yVel = 1;
+    //bottom edge
+    else if (startCell.y == grid.height - 1)
+        yVel = -1;
+
+    while (true)
+    {
+        //move laser
+        laserX += xVel;
+        laserY += yVel;
+        var laserCell = grid.GetCell(laserX, laserY);
+
+        if (laserCell.isOnEdge)
+        {
+            //laser exited box, it's a deflection
+            //TODO: remove miss, it's not actually necessary
+        }
+
+        //loop through each cell with an atom
+        grid.cellsWithAtoms.forEach(atomCell =>
+        {
+            if (laserX == atomCell.x && laserY == atomCell.y)
+            {
+                //it was a hit !!!
+            }
+
+            ondddondnfdoon
+            //check if laser is one diagonal space away from the cell
+            //if ()
+        });
+    }
+}
+
+function Print(message) {
+    console.log(message);
 }
 
 function Random(min, max)
