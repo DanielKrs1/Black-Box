@@ -2,8 +2,7 @@ var shotType = {
     none : -1,
     hit : 0,
     deflection : 1,
-    reflection : 2,
-    miss : 3
+    reflection : 2
 }
 
 class Cell
@@ -138,7 +137,7 @@ class Grid
     }
 }
 
-var grid = new Grid(8, 8, 30, 6);
+var grid = new Grid(20, 20, 25, 20);
 
 function setup()
 {
