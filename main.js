@@ -35,6 +35,14 @@ class Cell
         fill(225);
         rect(this.worldX, this.worldY,   this.masterGrid.cellSize, this.masterGrid.cellSize);
 
+        //temporary
+        if (this.isAtom)
+        {
+            fill(0);
+            var halfCellSize = this.masterGrid.cellSize / 2;
+            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, halfCellSize, halfCellSize);
+        }
+
         if (this.isOnEdge)
         {
             textSize(grid.cellSize * 0.75);
@@ -65,16 +73,6 @@ class Cell
             var halfCellSize = this.masterGrid.cellSize / 2;
             ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, halfCellSize, halfCellSize);
         }
-        
-        /*
-        if (this.isAtom)
-        {
-            fill(0);
-            
-            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, this.masterGrid.cellSize, this.masterGrid.cellSize);   
-
-        }
-        */
     }
 }
 
@@ -137,10 +135,12 @@ class Grid
     }
 }
 
-var grid = new Grid(20, 20, 25, 20);
+var grid; 
 
 function setup()
 {
+    grid = new Grid(5, 5, 50, 2);
+    console.log (grid);
     createCanvas(grid.width * grid.cellSize, grid.height * grid.cellSize);
     grid.Draw();
 }
@@ -159,7 +159,7 @@ function mousePressed()
         if (cell.isCorner)
             return;
 
-        
+        FireLaser(cell);
     } else
     {
         cell.isMarked = !cell.isMarked;
@@ -170,11 +170,9 @@ function mousePressed()
 
 function FireLaser(startCell)
 {
-    //laser position
+    //laser data
     var laserX = startCell.x;
     var laserY = startCell.y;
-
-    //laser velocity
     var xVel = 0;
     var yVel = 0;
 
@@ -191,8 +189,13 @@ function FireLaser(startCell)
     else if (startCell.y == grid.height - 1)
         yVel = -1;
 
-    while (true)
+    var safety = 0;
+
+    while (safety < 9999)
     {
+        safety++;
+        console.log(laserX + ", " + laserY);
+
         //move laser
         laserX += xVel;
         laserY += yVel;
@@ -200,16 +203,26 @@ function FireLaser(startCell)
 
         if (laserCell.isOnEdge)
         {
-            //laser exited box, it's a deflection
+            if (laserCell == startCell)
+            {
+                //laser exited box at the same point it entered, so relfection
+                laserCell.shotType = shotType.reflection;
+                return;
+            } else
+            {
+                //deflection
+            }
             //TODO: count deflections and mark with a number
-            laserCell
         }
 
-        grid.cellsWithAtoms.forEach(atomCell =>
+        for (var atomCell of grid.cellsWithAtoms)
         {
+            Print(atomCell);
+
             if (laserX == atomCell.x && laserY == atomCell.y)
             {
                 //Hit
+                Print("HIT!");
                 startCell.shotType = shotType.hit;
                 return;
             }
@@ -221,8 +234,10 @@ function FireLaser(startCell)
                 xVel = newDirection[0];
                 yVel = newDirection[1];
             }
-        });
+        }
     }
+
+    console.error("Laser never hit atom or left box!");
 }
 
 var bounceDirection =
