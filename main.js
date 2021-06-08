@@ -30,6 +30,9 @@ class Cell
 
     Draw()
     {
+        if (this.isCorner)
+            return;
+
         fill(225);
         rect(this.worldX, this.worldY,   this.masterGrid.cellSize, this.masterGrid.cellSize);
 
@@ -140,10 +143,6 @@ var grid = new Grid(8, 8, 30, 6);
 function setup()
 {
     createCanvas(grid.width * grid.cellSize, grid.height * grid.cellSize);
-}
-
-function draw()
-{
     grid.Draw();
 }
 
@@ -166,6 +165,8 @@ function mousePressed()
     {
         cell.isMarked = !cell.isMarked;
     }
+
+    grid.Draw();
 }
 
 function FireLaser(startCell)
