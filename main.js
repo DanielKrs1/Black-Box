@@ -201,22 +201,70 @@ function FireLaser(startCell)
         if (laserCell.isOnEdge)
         {
             //laser exited box, it's a deflection
-            //TODO: remove miss, it's not actually necessary
+            //TODO: count deflections and mark with a number
+            laserCell
         }
 
-        //loop through each cell with an atom
         grid.cellsWithAtoms.forEach(atomCell =>
         {
             if (laserX == atomCell.x && laserY == atomCell.y)
             {
-                //it was a hit !!!
+                //Hit
+                startCell.shotType = shotType.hit;
+                return;
             }
 
-            ondddondnfdoon
-            //check if laser is one diagonal space away from the cell
-            //if ()
+            //Bounce off atom if it hits it on the diagonal
+            if (abs(laserX - atomCell.x) == 1 && abs(laserY - atomCell.y) == 1)
+            {
+                var newDirection = Bounce(laserX, laserY, xVel, yVel, atomCell.x, atomCell.y);
+                xVel = newDirection[0];
+                yVel = newDirection[1];
+            }
         });
     }
+}
+
+var bounceDirection =
+{
+    left : 0,
+    right : 1
+}
+
+function Bounce(laserX, laserY, xVel, yVel, atomX, atomY)
+{
+    //bounce left: (x, y) => (y, -x)
+    //bounce right: (x, y) => (-y, x)
+    var left = GetBounceVelocity(xVel, yVel, bounceDirection.left);
+    var right = GetBounceVelocity(xVel, yVel, bounceDirection.right);
+
+    //Check if atom is left of the cell
+    var laserLeftDiagX = laserX + xVel + left[0];
+    var laserLeftDiagY = laserY + yVel + left[1];
+
+    if (laserLeftDiagX == atomX && laserLeftDiagY == atomY)
+    {
+        //atom on left, bounce right
+        return right;
+    }
+
+    //Check if atom is right of the cell
+    var laserRightDiagX = laserX + xVel + right[0];
+    var laserRightDiagY = laserY + yVel + right[1];
+
+    if (laserRightDiagX == atomX && laserRightDiagY == atomY)
+    {
+        //atom on right, bounce left
+        return left;
+    }
+}
+
+function GetBounceVelocity(xVel, yVel, bounceDir)
+{
+    if (bounceDir == bounceDirection.left)
+        return [yVel, -xVel];
+    else if (bounceDir == bounceDirection.right)
+        return [-yVel, xVel];
 }
 
 function Print(message) {
