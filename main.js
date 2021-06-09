@@ -22,6 +22,7 @@ class Cell
         //for edge cells
         this.isOnEdge = masterGrid.IsOnEdge(x, y);
         this.shotType = shotType.none;
+        this.deflectionIndex = -1;
 
         //for corners (not used)
         this.isCorner = (x == 0 || x == masterGrid.width - 1) && (y == 0 || y == masterGrid.height - 1);
@@ -57,7 +58,7 @@ class Cell
             } else if (this.shotType == shotType.deflection)
             {
                 fill(0, 255, 0);
-                text("D", drawX, drawY);
+                text(this.deflectionIndex, drawX, drawY);
             } else if (this.shotType == shotType.reflection)
             {
                 fill(255, 255, 0);
@@ -135,11 +136,12 @@ class Grid
     }
 }
 
-var grid; 
+var grid;
+var deflectionCount = 0;
 
 function setup()
 {
-    grid = new Grid(5, 5, 50, 2);
+    grid = new Grid(10, 10, 50, 5);
     console.log (grid);
     createCanvas(grid.width * grid.cellSize, grid.height * grid.cellSize);
     grid.Draw();
@@ -189,6 +191,7 @@ function FireLaser(startCell)
     else if (startCell.y == grid.height - 1)
         yVel = -1;
 
+    var firstMove = true;
     var safety = 0;
 
     while (safety < 9999)
@@ -205,34 +208,82 @@ function FireLaser(startCell)
         {
             if (laserCell == startCell)
             {
-                //laser exited box at the same point it entered, so relfection
+                //laser exited box at the same point it entered, so reflection
                 laserCell.shotType = shotType.reflection;
                 return;
             } else
             {
-                //deflection
-            }
-            //TODO: count deflections and mark with a number
-        }
-
-        for (var atomCell of grid.cellsWithAtoms)
-        {
-            Print(atomCell);
-
-            if (laserX == atomCell.x && laserY == atomCell.y)
-            {
-                //Hit
-                Print("HIT!");
-                startCell.shotType = shotType.hit;
+                //laser exited at different point, so deflection
+                deflectionCount++;
+                startCell.shotType = shotType.deflection;
+                startCell.deflectionIndex = deflectionCount;
+                laserCell.shotType = shotType.deflection;
+                laserCell.deflectionIndex = deflectionCount;
                 return;
             }
+        }
 
-            //Bounce off atom if it hits it on the diagonal
-            if (abs(laserX - atomCell.x) == 1 && abs(laserY - atomCell.y) == 1)
+        //Only bounce if there isn't an atom it's about to hit
+        if (!grid.GetCell(laserX + xVel, laserY + yVel).isAtom)
+        {
+            //Count number of atoms diagonally adjacent (0, 1, or 2)
+            var diagonallyAdjacentAtomCount = 0;
+            //The direction we would go in
+            var tentativeBounceX = xVel;
+            var tentativeBounceY = yVel;
+
+            for (var atomCell of grid.cellsWithAtoms)
             {
-                var newDirection = Bounce(laserX, laserY, xVel, yVel, atomCell.x, atomCell.y);
+                if (laserX == atomCell.x && laserY == atomCell.y)
+                {
+                    //Hit
+                    Print("HIT!");
+                    startCell.shotType = shotType.hit;
+                    return;
+                }
+
+                //Take atom into account if diagonal to it
+                if (abs(laserX - atomCell.x) == 1 && abs(laserY - atomCell.y) == 1)
+                {
+                    diagonallyAdjacentAtomCount++;
+                    var newDirection = Bounce(laserX, laserY, tentativeBounceX, tentativeBounceY, atomCell.x, atomCell.y);
+                    tentativeBounceX = newDirection[0];
+                    tentativeBounceY = newDirection[1];
+                }
+            }
+
+            //Turn 180 degrees if hitting 2 atoms
+            if (diagonallyAdjacentAtomCount == 2)
+            {
+                var newDirection = Reflect(xVel, yVel);
                 xVel = newDirection[0];
                 yVel = newDirection[1];
+            } else
+            {
+                xVel = tentativeBounceX;
+                yVel = tentativeBounceY;
+            }
+        }
+
+        //check if relfection by immediately entering
+        if (firstMove)
+        {
+            firstMove = false;
+
+            //check if theres an atom left or right of it
+            var left = GetBounceVelocity(xVel, yVel, bounceDirection.left);
+            var right = GetBounceVelocity(xVel, yVel, bounceDirection.right);
+
+            if (grid.GetCell(laserX + left[0], laserY + left[1]).isAtom)
+            {
+                startCell.shotType = shotType.reflection;
+                return;
+            }
+            
+            if (grid.GetCell(laserX + right[0], laserY + right[1]).isAtom)
+            {
+                startCell.shotType = shotType.reflection;
+                return;
             }
         }
     }
@@ -244,6 +295,11 @@ var bounceDirection =
 {
     left : 0,
     right : 1
+}
+
+function Reflect(xVel, yVel)
+{
+    return [-xVel, -yVel];
 }
 
 function Bounce(laserX, laserY, xVel, yVel, atomX, atomY)
