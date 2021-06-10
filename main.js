@@ -159,14 +159,13 @@ class Grid
     }
 }
 
-var grid;
+var grid = new Grid(10, 10, 50, 10);
 var deflectionCount = 0;
+var guessedCells = [];
 var isOver;
 
 function setup()
 {
-    grid = new Grid(5, 5, 50, 5);
-    guessedCells = [];
     createCanvas(grid.width * grid.cellSize, grid.height * grid.cellSize);
     grid.Draw();
 
@@ -269,6 +268,7 @@ function FireLaser(startCell)
         laserY += yVel;
         var laserCell = grid.GetCell(laserX, laserY);
 
+        //did laser exit box?
         if (laserCell.isOnEdge)
         {
             if (laserCell == startCell)
@@ -288,45 +288,14 @@ function FireLaser(startCell)
             }
         }
 
-        //Only bounce if there isn't an atom it's about to hit
-        if (!grid.GetCell(laserX + xVel, laserY + yVel).isAtom)
+        //did it hit an atom?
+        for (var atomCell of grid.cellsWithAtoms)
         {
-            //Count number of atoms diagonally adjacent (0, 1, or 2)
-            var diagonallyAdjacentAtomCount = 0;
-            //The direction we would go in
-            var tentativeBounceX = xVel;
-            var tentativeBounceY = yVel;
-
-            for (var atomCell of grid.cellsWithAtoms)
+            if (laserX == atomCell.x && laserY == atomCell.y)
             {
-                if (laserX == atomCell.x && laserY == atomCell.y)
-                {
-                    //Hit
-                    Print("HIT!");
-                    startCell.shotType = shotType.hit;
-                    return;
-                }
-
-                //Take atom into account if diagonal to it
-                if (abs(laserX - atomCell.x) == 1 && abs(laserY - atomCell.y) == 1)
-                {
-                    diagonallyAdjacentAtomCount++;
-                    var newDirection = Bounce(laserX, laserY, tentativeBounceX, tentativeBounceY, atomCell.x, atomCell.y);
-                    tentativeBounceX = newDirection[0];
-                    tentativeBounceY = newDirection[1];
-                }
-            }
-
-            //Turn 180 degrees if hitting 2 atoms
-            if (diagonallyAdjacentAtomCount == 2)
-            {
-                var newDirection = Reflect(xVel, yVel);
-                xVel = newDirection[0];
-                yVel = newDirection[1];
-            } else
-            {
-                xVel = tentativeBounceX;
-                yVel = tentativeBounceY;
+                Print("HIT!");
+                startCell.shotType = shotType.hit;
+                return;
             }
         }
 
@@ -349,6 +318,41 @@ function FireLaser(startCell)
             {
                 startCell.shotType = shotType.reflection;
                 return;
+            }
+        }
+
+        //bounce logic
+        //only bounce if there isn't an atom it's about to hit
+        if (!grid.GetCell(laserX + xVel, laserY + yVel).isAtom)
+        {
+            //Count number of atoms diagonally adjacent (0, 1, or 2)
+            var diagonallyAdjacentAtomCount = 0;
+            //The direction we would go in
+            var tentativeBounceX = xVel;
+            var tentativeBounceY = yVel;
+
+            for (var atomCell of grid.cellsWithAtoms)
+            {
+                //Take atom into account if diagonal to it
+                if (abs(laserX - atomCell.x) == 1 && abs(laserY - atomCell.y) == 1)
+                {
+                    diagonallyAdjacentAtomCount++;
+                    var newDirection = Bounce(laserX, laserY, tentativeBounceX, tentativeBounceY, atomCell.x, atomCell.y);
+                    tentativeBounceX = newDirection[0];
+                    tentativeBounceY = newDirection[1];
+                }
+            }
+
+            //Turn 180 degrees if hitting 2 atoms
+            if (diagonallyAdjacentAtomCount == 2)
+            {
+                var newDirection = Reflect(xVel, yVel);
+                xVel = newDirection[0];
+                yVel = newDirection[1];
+            } else
+            {
+                xVel = tentativeBounceX;
+                yVel = tentativeBounceY;
             }
         }
     }
