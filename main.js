@@ -36,14 +36,6 @@ class Cell
         fill(225);
         rect(this.worldX, this.worldY,   this.masterGrid.cellSize, this.masterGrid.cellSize);
 
-        //temporary
-        if (this.isAtom)
-        {
-            fill(0);
-            var halfCellSize = this.masterGrid.cellSize / 2;
-            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, halfCellSize, halfCellSize);
-        }
-
         if (this.isOnEdge)
         {
             textSize(grid.cellSize * 0.75);
@@ -71,6 +63,25 @@ class Cell
         } else if (this.isMarked)
         {
             fill(255, 0, 0);
+            var halfCellSize = this.masterGrid.cellSize / 2;
+            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, halfCellSize, halfCellSize);
+        }
+    }
+
+    Reveal(isGuessed)
+    {   
+        if (isGuessed)
+        {
+            if (this.isAtom)
+                fill(0, 255, 0);
+            else
+                fill(255, 0, 0);
+
+            var halfCellSize = this.masterGrid.cellSize / 2;
+            ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, halfCellSize, halfCellSize);
+        } else if (this.isAtom)
+        {
+            fill(0);
             var halfCellSize = this.masterGrid.cellSize / 2;
             ellipse(this.worldX + halfCellSize, this.worldY + halfCellSize, halfCellSize, halfCellSize);
         }
@@ -120,9 +131,21 @@ class Grid
 
     Draw()
     {
+        Print("REDRAWING GRID!");
+
         for (var x = 0; x < this.width; x++)
             for (var y = 0; y < this.height; y++)
                 this.GetCell(x, y).Draw();
+    }
+
+    Reveal()
+    {
+        for (var x = 0; x < this.width; x++)
+            for (var y = 0; y < this.height; y++)
+            {
+                var cell = this.GetCell(x, y);
+                cell.Reveal(guessedCells.includes(cell));
+            }
     }
 
     IsOnEdge(x, y)
@@ -138,17 +161,23 @@ class Grid
 
 var grid;
 var deflectionCount = 0;
+var isOver;
 
 function setup()
 {
-    grid = new Grid(10, 10, 50, 5);
-    console.log (grid);
+    grid = new Grid(5, 5, 50, 5);
+    guessedCells = [];
     createCanvas(grid.width * grid.cellSize, grid.height * grid.cellSize);
     grid.Draw();
+
+    createButton("TYLER BALLS").mouseClicked(OnSubmit);
 }
 
 function mousePressed()
 {
+    if (isOver)
+        return;
+
     if (mouseX < 0 || mouseX >= width || mouseY < 0 || mouseY >= height)
         return;
 
@@ -164,10 +193,46 @@ function mousePressed()
         FireLaser(cell);
     } else
     {
-        cell.isMarked = !cell.isMarked;
+        if (cell.isMarked)
+        {
+            cell.isMarked = false;
+            guessedCells.splice(guessedCells.indexOf(cell), 1);
+        } else
+        {
+            cell.isMarked = true;
+            guessedCells.push(cell);
+        }
     }
 
+    Print(guessedCells);
     grid.Draw();
+}
+
+function OnSubmit()
+{
+    isOver = true;
+    Print(guessedCells);
+    grid.Reveal();
+
+    if (HasWon())
+    {
+        //winnededd
+        
+    }
+}
+
+function HasWon()
+{
+    if (guessedCells.length != grid.cellsWithAtoms.length)
+        return false;
+        
+    for (var guessedCell of guessedCells)
+    {
+        if (!grid.cellsWithAtoms.includes(guessedCell))
+            return false;
+    }
+
+    return true;
 }
 
 function FireLaser(startCell)
