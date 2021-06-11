@@ -159,7 +159,7 @@ class Grid
     }
 }
 
-var grid = new Grid(10, 10, 50, 10);
+var grid = new Grid(10, 10, 50, 5);
 var deflectionCount = 0;
 var guessedCells = [];
 var isOver;
