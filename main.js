@@ -172,6 +172,9 @@ function setup()
     descriptionText = createP();
     createButton("Submit").mouseClicked(OnSubmit);
     descriptionText.html("There are " + grid.cellsWithAtoms.length + " atoms left.");
+
+    //write instructions
+    createP("");
 }
 
 function mousePressed()
@@ -216,7 +219,8 @@ function OnSubmit()
     if (HasWon())
     {
         descriptionText.html("You guessed all the atoms!");
-    }
+    } else
+        descriptionText.html("You lose :(");
 }
 
 function HasWon()
