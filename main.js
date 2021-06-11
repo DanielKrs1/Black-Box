@@ -169,15 +169,14 @@ function setup()
     createCanvas(grid.width * grid.cellSize, grid.height * grid.cellSize);
     grid.Draw();
 
-    createButton("TYLER BALLS").mouseClicked(OnSubmit);
+    descriptionText = createP();
+    createButton("Submit").mouseClicked(OnSubmit);
+    descriptionText.html("There are " + grid.cellsWithAtoms.length + " atoms left.");
 }
 
 function mousePressed()
 {
-    if (isOver)
-        return;
-
-    if (mouseX < 0 || mouseX >= width || mouseY < 0 || mouseY >= height)
+    if (isOver || mouseX < 0 || mouseX >= width || mouseY < 0 || mouseY >= height)
         return;
 
     var x = round(mouseX / grid.cellSize - 0.5);
@@ -186,7 +185,7 @@ function mousePressed()
 
     if (grid.IsOnEdge(x, y))
     {
-        if (cell.isCorner)
+        if (cell.isCorner || cell.shotType != shotType.none)
             return;
 
         FireLaser(cell);
@@ -196,14 +195,15 @@ function mousePressed()
         {
             cell.isMarked = false;
             guessedCells.splice(guessedCells.indexOf(cell), 1);
-        } else
+        } else if (guessedCells.length < grid.cellsWithAtoms.length)
         {
             cell.isMarked = true;
             guessedCells.push(cell);
-        }
+        } else
+            return;
     }
 
-    Print(guessedCells);
+    descriptionText.html("There are " + (grid.cellsWithAtoms.length - guessedCells.length) + " atoms left.");
     grid.Draw();
 }
 
@@ -215,14 +215,13 @@ function OnSubmit()
 
     if (HasWon())
     {
-        //winnededd
-        
+        descriptionText.html("You guessed all the atoms!");
     }
 }
 
 function HasWon()
 {
-    if (guessedCells.length != grid.cellsWithAtoms.length)
+    if (guessedCells.length < grid.cellsWithAtoms.length)
         return false;
         
     for (var guessedCell of guessedCells)
