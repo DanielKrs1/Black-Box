@@ -182,7 +182,7 @@ function setup()
     createP("1 - If a laser misses, the box will display M");
     createP("2 - If a laser hits an atom, the box will display H");
     createP("3 - If a laser deflects off an atom, it will display a number in two cells, the one you fired from and the one it deflected to");
-    createP("4 - If a laser reflects back to itself, it will display R")
+    createP("4 - If a laser reflects back to itself, it will display R");
     createP("How to win:")
     createP("After firing the lasers you needed you can click the cells on the grid that you think contain the atom and click the submit button. If you are correct then you win")
 }
