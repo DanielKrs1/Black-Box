@@ -33,7 +33,11 @@ class Cell
         if (this.isCorner)
             return;
 
-        fill(225);
+        if (this.isOnEdge)
+            fill(120);
+        else
+            fill(80);
+
         rect(this.worldX, this.worldY,   this.masterGrid.cellSize, this.masterGrid.cellSize);
 
         if (this.isOnEdge)
@@ -131,8 +135,6 @@ class Grid
 
     Draw()
     {
-        Print("REDRAWING GRID!");
-
         for (var x = 0; x < this.width; x++)
             for (var y = 0; y < this.height; y++)
                 this.GetCell(x, y).Draw();
@@ -174,7 +176,15 @@ function setup()
     descriptionText.html("There are " + grid.cellsWithAtoms.length + " atoms left.");
 
     //write instructions
-    createP("");
+    createP("Black Box Instructions:");
+    createP("A single-player game where the goal is to determine the locations of hidden atoms on a grid, or \"black box\". This is achieved by firing lasers into the black box and observing their interactions with the atoms. You can fire lasers by clicking on the bordering boxes and it will display a number/letter that will guide you to the cell");
+    createP("Rules:")
+    createP("1 - If a laser misses, the box will display M");
+    createP("2 - If a laser hits an atom, the box will display H");
+    createP("3 - If a laser deflects off an atom, it will display a number in two cells, the one you fired from and the one it deflected to");
+    createP("4 - If a laser reflects back to itself, it will display R")
+    createP("How to win:")
+    createP("After firing the lasers you needed you can click the cells on the grid that you think contain the atom and click the submit button. If you are correct then you win")
 }
 
 function mousePressed()
@@ -213,7 +223,6 @@ function mousePressed()
 function OnSubmit()
 {
     isOver = true;
-    Print(guessedCells);
     grid.Reveal();
 
     if (HasWon())
@@ -296,7 +305,6 @@ function FireLaser(startCell)
         {
             if (laserX == atomCell.x && laserY == atomCell.y)
             {
-                Print("HIT!");
                 startCell.shotType = shotType.hit;
                 return;
             }
@@ -408,10 +416,6 @@ function GetBounceVelocity(xVel, yVel, bounceDir)
         return [yVel, -xVel];
     else if (bounceDir == bounceDirection.right)
         return [-yVel, xVel];
-}
-
-function Print(message) {
-    console.log(message);
 }
 
 function Random(min, max)
